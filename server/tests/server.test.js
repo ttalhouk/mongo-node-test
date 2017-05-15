@@ -6,7 +6,7 @@ var {app} = require('./../server');
 var {Todo} = require('./../models/todo');
 
 const todosSeed = [{_id: new ObjectID(), text: 'feed plant'},
-  {_id: new ObjectID(), text: 'water dog'},
+  {_id: new ObjectID(), text: 'water dog', completed: true, completedAt: 333 },
   {_id: new ObjectID(), text: 'walk the fish'}]
 
 beforeEach((done) => {
@@ -16,7 +16,7 @@ beforeEach((done) => {
   .then(() => done());
 });
 
-describe('POST /todos', () =>{
+describe('POST /todos', () => {
   it('should create a new todo', (done)=>{
     var text = 'test todo text';
     request(app)
@@ -72,7 +72,7 @@ describe('GET /todos', () => {
   })
 })
 
-describe('GET /todos/:id', ()=>{
+describe('GET /todos/:id', () => {
   it('should get todo with valid matching id', (done)=>{
     request(app)
       .get(`/todos/${todosSeed[0]._id.toHexString()}`)
@@ -97,7 +97,7 @@ describe('GET /todos/:id', ()=>{
 
 })
 
-describe('DELETE /todos/:id', ()=>{
+describe('DELETE /todos/:id', () => {
   it('should remove todo with valid matching id', (done)=>{
     var id = todosSeed[0]._id.toHexString();
     request(app)
@@ -132,4 +132,43 @@ describe('DELETE /todos/:id', ()=>{
       .end(done);
   });
 
+})
+
+describe('PATCH /todos/:id', () => {
+  it('should update the todo', (done) => {
+    // grab id of first item
+    var id = todosSeed[0]._id.toHexString();
+    var updates = {text: 'new text', completed: true}
+    // set text, completed to true
+    request(app)
+      .patch(`/todos/${id}`)
+      .send(updates)
+      // assert 200
+      .expect(200)
+      .expect((res) => {
+        // assert text = new text, complted = true, completedAt is number (.toBeA)
+        expect(res.body.todo.text).toBe(updates.text);
+        expect(res.body.todo.completed).toBe(true);
+        expect(res.body.todo.completedAt).toBeA('number');
+      })
+      .end(done);
+  });
+  it('should clear completed at if completion set to false', (done) => {
+    // grab id of second item
+    // text changed, completed to false
+    var id = todosSeed[1]._id.toHexString();
+    var updates = {text: 'new text', completed: false}
+    request(app)
+      .patch(`/todos/${id}`)
+      .send(updates)
+      // assert 200
+      .expect(200)
+      .expect((res) => {
+        // assert text = new text, complted = true, completedAt is number (.toBeA)
+        expect(res.body.todo.text).toBe(updates.text);
+        expect(res.body.todo.completed).toBe(false);
+        expect(res.body.todo.completedAt).toNotExist();
+      })
+      .end(done);
+  });
 })
