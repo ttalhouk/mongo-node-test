@@ -1,11 +1,13 @@
 const expect = require('expect');
 const request = require('supertest');
+const {ObjectID} = require('mongodb');
 
+var {app} = require('./../server');
+var {Todo} = require('./../models/todo');
 
-var {app} = require('../server');
-var {Todo} = require('../models/todo');
-
-const todosSeed = [{text: 'feed plant'}, {text: 'water dog'}, {text: 'walk the fish'}]
+const todosSeed = [{_id: new ObjectID(), text: 'feed plant'},
+  {_id: new ObjectID(), text: 'water dog'},
+  {_id: new ObjectID(), text: 'walk the fish'}]
 
 beforeEach((done) => {
   Todo.remove({}).then(()=> {
@@ -68,4 +70,29 @@ describe('GET /todos', () => {
         done();
       })
   })
+})
+
+describe('GET /todos/:id', ()=>{
+  it('should get todo with valid matching id', (done)=>{
+    request(app)
+      .get(`/todos/${todosSeed[0]._id.toHexString()}`)
+      .expect(200)
+      .expect((res) => {
+        expect(res.body.todo.text).toBe(todosSeed[0].text);
+      })
+      .end(done);
+  });
+  it('should return a 404 if todo not found',(done) => {
+    request(app)
+      .get(`/todos/${new ObjectID().toHexString()}`)
+      .expect(404)
+      .end(done);
+  });
+  it('should return a 404 if id is not valid', (done) => {
+    request(app)
+      .get(`/todos/123`)
+      .expect(404)
+      .end(done);
+  });
+
 })
