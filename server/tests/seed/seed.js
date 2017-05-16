@@ -18,13 +18,17 @@ const usersSeed = [
   {
     _id: userTwoId,
     email: 'jim@example.com',
-    password: 'password2'
+    password: 'password2',
+    tokens:[{
+      access:'auth',
+      token: jwt.sign({_id: userTwoId, access: 'auth'}, 'abc123').toString()
+    }]
   }
 ]
 
-const todosSeed = [{_id: new ObjectID(), text: 'feed plant'},
-  {_id: new ObjectID(), text: 'water dog', completed: true, completedAt: 333 },
-  {_id: new ObjectID(), text: 'walk the fish'}]
+const todosSeed = [{_id: new ObjectID(), text: 'feed plant', _creator: userOneId},
+  {_id: new ObjectID(), text: 'water dog', completed: true, completedAt: 333, _creator:userTwoId },
+  {_id: new ObjectID(), text: 'walk the fish', _creator: userOneId}]
 
 const populateTodos = (done) => {
   Todo.remove({}).then(()=> {
