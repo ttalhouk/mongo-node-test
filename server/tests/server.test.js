@@ -212,8 +212,8 @@ describe('POST /users', () => {
           expect(user).toExist();
           expect(user.password).toNotBe(password);
           done();
-        })
-      })
+        }).catch(err => done(err));
+      });
   });
   it('should return 401 if provided information is invalid', (done) =>{
     var email = 'email';
@@ -239,3 +239,51 @@ describe('POST /users', () => {
       .end(done)
   });
 })
+
+describe('POST /users/login', () => {
+  it('Should return a token with with credentials', (done) => {
+    var email = usersSeed[1].email;
+    var password = usersSeed[1].password;
+    request(app)
+      .post('/users/login')
+      .send({email, password})
+      .expect(200)
+      .expect((res) => {
+        expect(res.headers['x-auth']).toExist();
+        expect(res.body._id).toExist();
+        expect(res.body.email).toBe(email);
+      })
+      .end((err, res) => {
+        if (err) {
+          return done(err);
+        }
+        User.findById(usersSeed[1]._id).then((user) => {
+          expect(user.tokens[0]).toInclude({
+            access:'auth',
+            token:res.headers['x-auth']
+          });
+          done();
+        }).catch(err => done(err));
+      });
+  });
+  it('Should return a 400 if invald credentials', (done) => {
+    var email = usersSeed[1].email;
+    var password = usersSeed[1].password + "wrong";
+    request(app)
+      .post('/users/login')
+      .send({email, password})
+      .expect(400)
+      .expect((res) => {
+        expect(res.headers['x-auth']).toNotExist();
+      })
+      .end((err, res) => {
+        if (err) {
+          return done(err);
+        }
+        User.findById(usersSeed[1]._id).then((user) => {
+          expect(user.tokens.length).toBe(0);
+          done();
+        }).catch(err => done(err));
+      });
+  });
+});
