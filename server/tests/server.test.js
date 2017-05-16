@@ -287,3 +287,23 @@ describe('POST /users/login', () => {
       });
   });
 });
+describe('DELETE /users/me/logout', () => {
+  it('Should remove token from logged in user', (done) => {
+    request(app)
+      .delete('/users/me/logout')
+      .set('x-auth', usersSeed[0].tokens[0].token)
+      .expect(200)
+      .expect((res) => {
+        expect(res.headers['x-auth']).toNotExist();
+      })
+      .end((err, res) => {
+        if (err) {
+          return done(err);
+        }
+        User.findById(usersSeed[0]._id).then((user) => {
+          expect(user.tokens.length).toBe(0);
+          done();
+        }).catch(err => done(err));
+      });
+  })
+})
