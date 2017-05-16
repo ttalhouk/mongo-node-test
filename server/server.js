@@ -51,7 +51,7 @@ app.get('/todos/:id', (req,res) => {
       if(!doc){
         return res.status(404).send();
       }
-      console.log('Found: ', doc);
+      //console.log('Found: ', doc);
       res.send({todo: doc});
     }).catch((e) =>{
       res.status(400).send();
@@ -70,7 +70,7 @@ app.delete('/todos/:id', (req, res) =>{
       if(!todo){
         return res.status(404).send();
       }
-      console.log('Removed: ', todo);
+      //console.log('Removed: ', todo);
       res.send({todo});
     })
     .catch((e) =>{
@@ -108,7 +108,7 @@ app.patch('/todos/:id', (req, res) =>{
       if(!todo){
         return res.status(404).send();
       }
-      console.log('Updated: ', todo);
+      //console.log('Updated: ', todo);
       res.send({todo});
     }).catch((e) =>{
       res.status(400).send();
